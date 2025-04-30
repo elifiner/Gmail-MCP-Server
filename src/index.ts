@@ -18,6 +18,7 @@ import open from 'open';
 import os from 'os';
 import {createEmailMessage} from "./utl.js";
 import { createLabel, updateLabel, deleteLabel, listLabels, findLabelByName, getOrCreateLabel, GmailLabel } from "./label-manager.js";
+import { htmlToText } from 'html-to-text';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -466,13 +467,13 @@ async function main() {
                     // Extract email content using the recursive function
                     const { text, html } = extractEmailContent(response.data.payload as GmailMessagePart || {});
 
-                    // Use plain text content if available, otherwise use HTML content
-                    // (optionally, you could implement HTML-to-text conversion here)
-                    let body = text || html || '';
+                    // Use plain text content if available, otherwise use stripped HTML content
+                    const strippedHtml = htmlToText(html);
+                    let body = text || strippedHtml || '';
 
                     // If we only have HTML content, add a note for the user
                     const contentTypeNote = !text && html ?
-                        '[Note: This email is HTML-formatted. Plain text version not available.]\n\n' : '';
+                        '[Note: This email is HTML-formatted. Plain text version not available. Using HTML-to-text conversion.]\n\n' : '';
 
                     // Get attachment information
                     const attachments: EmailAttachment[] = [];
